@@ -1,0 +1,31 @@
+bootstrap: docker
+from: debian:buster-slim
+
+%help
+    CellRanger 3.1.0 executables
+
+%labels
+    Version 0.1.0
+    Maintainer Bill Flynn, bill.flynn@jax.org
+
+%environment
+    CELLRANGER_HOME="/opt/cellranger-3.1.0"
+    CR_EXEC="${CELLRANGER_HOME}/cellranger-cs/3.1.0/bin"
+    CR_PY="${CELLRANGER_HOME}/miniconda-cr-cs/4.3.21-miniconda-cr-cs-c10/bin"    
+    export PATH="${CR_EXEC}:${CR_PY}:$PATH"
+
+%post
+    apt-get update && \
+        apt-get -y upgrade
+    apt-get -y install wget \
+        ca-certificates
+    rm -rf /var/lib/apt/lists/*
+
+	mkdir -p /opt/ && cd /opt/
+
+	wget -nv -O cellranger-3.1.0.tar.gz "http://cf.10xgenomics.com/releases/cell-exp/cellranger-3.1.0.tar.gz?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiaHR0cDovL2NmLjEweGdlbm9taWNzLmNvbS9yZWxlYXNlcy9jZWxsLWV4cC9jZWxscmFuZ2VyLTMuMS4wLnRhci5neiIsIkNvbmRpdGlvbiI6eyJEYXRlTGVzc1RoYW4iOnsiQVdTOkVwb2NoVGltZSI6MTU3ODk4Mzk3OH19fV19&Signature=WKH8V2LZFX581yWUXJWTxR0f00Zt~RK-biYvHLl2FOphNEX-c27Q23o1OEDodmu5wrvNm7lybmUL9oQMIPrXMpPNGS5YgpW8to-AIol2T4wIET1f6DHjqUuPRVJvq~CTAcmBIs9FrRjZj8fZU35QGDABLoSi7n4J8ZFv2NZxSg4Jw67AKydLJTzM7u1UmznhaXclmSWDr~p722xFgbPp2DlLqgGFKl7FhA66KK48tL-~~mIGd8rQ1aKdjkp-ihOIqJon-pdPFOihZtjhs88mu2t5rzH0WPEXp6EXhqEF3Yl2Fqjf3Xmaipu0n642hnBslGXp9fijC4zInbhETtQg0A__&Key-Pair-Id=APKAI7S6A5RYOXBWRPDA"
+	tar -zxf cellranger-3.1.0.tar.gz && rm cellranger-3.1.0.tar.gz
+    rm -r cellranger-3.1.0/cellranger-tiny-*
+
+%runscript
+    exec "$@"
