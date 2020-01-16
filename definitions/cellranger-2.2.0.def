@@ -2,7 +2,7 @@ bootstrap: docker
 from: debian:buster-slim
 
 %help
-    CellRanger 3.1.0 executables
+    CellRanger 2.2.0 executables
 
     Run with
     > singularity run <image-name> cellranger <sub-command>
@@ -12,14 +12,14 @@ from: debian:buster-slim
     Maintainer Bill Flynn, bill.flynn@jax.org
 
 %environment
-    CELLRANGER_HOME="/opt/cellranger-3.1.0"
-    CR_EXEC="${CELLRANGER_HOME}/cellranger-cs/3.1.0/bin"
-    CR_PY="${CELLRANGER_HOME}/miniconda-cr-cs/4.3.21-miniconda-cr-cs-c10/bin"    
+    CELLRANGER_HOME="/opt/cellranger-2.2.0"
+    CR_EXEC="${CELLRANGER_HOME}/cellranger-cs/2.2.0/bin"
+    CR_PY="${CELLRANGER_HOME}/miniconda-cr-cs/4.3.21-miniconda-cr-cs-c9/bin"    
     export PATH="${CR_EXEC}:${CR_PY}:$PATH"
 
 %post
     set -eu
-    
+
     apt-get update && \
         apt-get -y upgrade
     apt-get -y install wget \
@@ -35,12 +35,12 @@ from: debian:buster-slim
 
 	mkdir -p /opt/ && cd /opt/
 
-	wget -nv -O cellranger-3.1.0.tar.gz "https://singlecell-software.s3-far.jax.org/cellranger-3.1.0.tar.gz"
-    wget -nv -O cellranger-3.1.0.tar.gz.sha1 "https://singlecell-software.s3-far.jax.org/cellranger-3.1.0.tar.gz.sha1"
-    sha1sum --status -c cellranger-3.1.0.tar.gz.sha1
+	wget -nv -O cellranger-2.2.0.tar.gz "https://singlecell-software.s3-far.jax.org/cellranger-2.2.0.tar.gz"
+    wget -nv -O cellranger-2.2.0.tar.gz.sha1 "https://singlecell-software.s3-far.jax.org/cellranger-2.2.0.tar.gz.sha1"
+    sha1sum --status -c cellranger-2.2.0.tar.gz.sha1
 
-	tar -zxf cellranger-3.1.0.tar.gz && rm cellranger-3.1.0.tar.gz
-    rm -r cellranger-3.1.0/cellranger-tiny-*
+	tar -zxf cellranger-2.2.0.tar.gz && rm cellranger-2.2.0.tar.gz
+    rm -r cellranger-2.2.0/cellranger-tiny-*
 
 %runscript
     exec "$@"
