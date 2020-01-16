@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+for def_file in $(find definitions/ -name "*.def"); do
+    sif_file=images/$(basename -- "${def_file%.*}").sif
+    if [[ ! -f $sif_file ]]; then
+        echo "Building ${sif_file} from ${def_file}"
+        ./builder $def_file $sif_file
+    fi
+done

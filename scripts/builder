@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+module load singularity
+builder="singularity run http://s3-far.jax.org/builder/builder"
+$builder $1 $2

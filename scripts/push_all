@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+for sif_file in $(find images/ -name "*.sif"); do
+    version_ext="${sif_file##*-}"
+    version="${version_ext%.*}"
+    img_name=$(basename -- ${sif_file%-*})
+    echo $img_name $version
+    singularity push $sif_file library://flynnb/alpha-users/${img_name}:${version}
+done
