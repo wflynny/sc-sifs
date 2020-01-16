@@ -33,13 +33,13 @@ from: debian:buster-slim
     echo "LANG=en_US.UTF-8" > /etc/locale.conf
     locale-gen en_US.UTF-8
 
-	mkdir -p /opt/ && cd /opt/
+    mkdir -p /opt/ && cd /opt/
 
-	wget -nv -O cellranger-2.0.2.tar.gz "https://singlecell-software.s3-far.jax.org/cellranger-2.0.2.tar.gz"
+    wget -nv -O cellranger-2.0.2.tar.gz "https://singlecell-software.s3-far.jax.org/cellranger-2.0.2.tar.gz"
     wget -nv -O cellranger-2.0.2.tar.gz.sha1 "https://singlecell-software.s3-far.jax.org/cellranger-2.0.2.tar.gz.sha1"
     sha1sum --status -c cellranger-2.0.2.tar.gz.sha1
 
-	tar -zxf cellranger-2.0.2.tar.gz && rm cellranger-2.0.2.tar.gz
+    tar -zxf cellranger-2.0.2.tar.gz && rm cellranger-2.0.2.tar.gz
     rm -r cellranger-2.0.2/cellranger-tiny-*
 
 %runscript
