@@ -1,0 +1,48 @@
+bootstrap: docker
+from: debian:buster-slim
+
+%help
+    CellRanger-ATAC 1.2.0 executables
+
+    Run with
+    > singularity run <image-name> cellranger-atac <sub-command>
+
+%labels
+    Version 1.0.0
+    Maintainer Bill Flynn, bill.flynn@jax.org
+
+
+%environment
+    CELLRANGER_HOME="/opt/cellranger-atac-1.2.0"
+    CR_EXEC="${CELLRANGER_HOME}/cellranger-atac-cs/1.2.0/bin"
+    CR_PY="${CELLRANGER_HOME}/miniconda-atac-cs/4.3.21-miniconda-atac-cs-c10/bin"    
+    
+    export PATH="${CR_EXEC}:${CR_PY}:$PATH"
+
+%post
+    set -eu
+    
+    apt-get update && \
+        apt-get -y upgrade
+    apt-get -y install wget \
+        ca-certificates \
+        locales
+    rm -rf /var/lib/apt/lists/*
+
+    # locale fix
+    echo "LC_ALL=en_US.UTF-8" >> /etc/environment
+    echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+    echo "LANG=en_US.UTF-8" > /etc/locale.conf
+    locale-gen en_US.UTF-8
+
+    mkdir -p /opt/ && cd /opt/
+
+    wget -nv -O cellranger-atac-1.2.0.tar.gz "https://singlecell-software.s3-far.jax.org/cellranger-atac-1.2.0.tar.gz"
+    wget -nv -O cellranger-atac-1.2.0.tar.gz.sha1 "https://singlecell-software.s3-far.jax.org/cellranger-atac-1.2.0.tar.gz.sha1"
+    sha1sum --status -c cellranger-atac-1.2.0.tar.gz.sha1
+
+    tar -zxf cellranger-atac-1.2.0.tar.gz && rm cellranger-atac-1.2.0.tar.gz
+    rm -r cellranger-atac-1.2.0/cellranger-atac-tiny-*
+
+%runscript
+    exec "$@"
