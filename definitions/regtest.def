@@ -1,0 +1,15 @@
+bootstrap: docker
+from: alpine:latest
+
+%help
+    Outputs a fortune if this pulls successfully
+
+%labels
+    Version 1.0.0
+    Maintainer Bill Flynn, bill.flynn@jax.org
+
+%post
+    apk add fortune
+
+%runscript
+    fortune
