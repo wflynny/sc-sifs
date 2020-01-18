@@ -1,0 +1,28 @@
+bootstrap: docker
+from: alpine:latest
+
+%labels
+    Version 1.0.0
+    Maintainer Bill Flynn, bill.flynn@jax.org
+
+%post
+    PKGS="gcc g++ make wget zlib1g-dev unzip"
+    STAR_VERSION="2.7.3a"
+    apk --no-cache add ${PKGS}
+
+    mkdir -p /opt/bin && \
+        cd /opt && \
+        wget https://github.com/alexdobin/STAR/latest/archive/${STAR_VERSION}.zip && \
+        unzip ${STAR_VERSION}.zip && \
+        cd STAR-${STAR_VERSION}/source && \
+        make STARstatic && \
+        cp STAR /opt/bin && \
+        cd /opt && \
+        rm -rf STAR-${STAR_VERSION} && \
+        apk del ${PKGS}
+
+%environment
+    export PATH="/opt/bin:$PATH"
+
+%runscript
+    /opt/bin/STAR "$@"

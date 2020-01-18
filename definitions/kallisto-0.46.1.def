@@ -1,0 +1,39 @@
+bootstrap: docker
+from: alpine:latest
+
+%help
+    Contains:
+        - kallisto 0.46.1
+        - bustools 0.39.4
+
+%labels
+    Version 1.0.0
+    Maintainer Bill Flynn, bill.flynn@jax.org
+
+%post
+    KALLISTO_VERSION="0.46.1"
+    BUSTOOLS_VERSION="0.39.4"
+    KALLISTO_TAR=kallisto_linux-v${KALLISTO_VERSION}.tar.gz
+    BUSTOOLS_TAR=bustools_linux-v${BUSTOOLS_VERSION}.tar.gz
+    KLINK="https://github.com/pachterlab/kallisto/releases/download/v${KALLISTO_VERSION}/${KALLISTO_TAR}"
+    BLINK="https://github.com/pachterlab/bustools/releases/download/v${BUSTOOLS_VERSION}/${BUSTOOLS_TAR}"
+
+    apk update && apk --no-cache add wget gzip
+
+    mkdir -p /opt/bin && \
+        cd /opt 
+    wget ${KLINK} && \
+        tar -zxvf ${KALLISTO_TAR} && \
+        cp kallisto/kallisto /opt/bin && \
+        rm -r ${KALLISTO_TAR} kallisto
+    wget ${BLINK} && \
+        tar -zxvf ${BUSTOOLS_TAR} && \
+        cp bustools/bustools /opt/bin && \
+        rm -r ${BUSTOOLS_TAR} bustools
+    apk del ${PKGS}
+
+%environment
+    export PATH="/opt/bin:$PATH"
+
+%runscript
+    exec "$@"
