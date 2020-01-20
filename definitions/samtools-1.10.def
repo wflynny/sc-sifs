@@ -6,6 +6,7 @@ from: alpine:latest
         - samtools 1.10
         - bcftools 1.10.2
         - htslib 1.10.2
+    Run directly invokes samtools
 
 %labels
     Version 1.0.0
@@ -19,43 +20,45 @@ from: alpine:latest
     BCFTOOLS_DIR=bcftools-${BCFTOOLS_VERSION}
     HTSLIB_DIR=htslib-${HTSLIB_VERSION}
     SLINK="https://github.com/samtools/samtools/releases/download/${SAMTOOLS_VERSION}/${SAMTOOLS_DIR}.tar.bz2"
-    BLINK=https://github.com/samtools/bcftools/releases/download/${BCFTOOLS_VERSION}/${BCFTOOLS_DIR}.tar.bz2"
-    HLINK=https://github.com/samtools/htslib/releases/download/${HTSLIB_VERSION}/${HTSLIB_DIR}.tar.bz2"
+    BLINK="https://github.com/samtools/bcftools/releases/download/${BCFTOOLS_VERSION}/${BCFTOOLS_DIR}.tar.bz2"
+    HLINK="https://github.com/samtools/htslib/releases/download/${HTSLIB_VERSION}/${HTSLIB_DIR}.tar.bz2"
 
-    apk update && apk --no-cache add wget bzip2 make
+    set -euo pipefail
+
+    apk update && apk --no-cache add build-base wget tar bzip2 ncurses-dev zlib-dev bzip2-dev xz-dev
 
     mkdir -p /opt/bin && \
         cd /opt 
 
-    echo "Compiling samtools ${SAMTOOLS_VERSION}"
-    wget ${SLINK} && \
-        tar -Jxf ${SAMTOOLS_DIR}.tar.bz2 && \
+    cd /opt && wget -nv ${SLINK} && \
+        tar -jxf ${SAMTOOLS_DIR}.tar.bz2 && \
         cd ${SAMTOOLS_DIR} && \
         ./configure --prefix=/opt && \
-        make && make install && make clean \
+        make && \
+        mv samtools /opt/bin && \
         cd /opt && rm -r ${SAMTOOLS_DIR}.tar.bz2 ${SAMTOOLS_DIR}
 
-    echo "Compiling bcftools ${BCFTOOLS_VERSION}"
-    wget ${BLINK} && \
-        tar -Jxf ${BCFTOOLS_DIR}.tar.bz2 && \
+    cd /opt && wget -nv ${BLINK} && \
+        tar -jxf ${BCFTOOLS_DIR}.tar.bz2 && \
         cd ${BCFTOOLS_DIR} && \
         ./configure --prefix=/opt && \
-        make && make install && make clean \
+        make && \
+        mv bcftools /opt/bin && \
         cd /opt && rm -r ${BCFTOOLS_DIR}.tar.bz2 ${BCFTOOLS_DIR}
 
-    echo "Compiling htslib ${HTSLIB_VERSION}"
-    wget ${BLINK} && \
-        tar -Jxf ${HTSLIB_DIR}.tar.bz2 && \
+    cd /opt && wget -nv ${HLINK} && \
+        tar -jxf ${HTSLIB_DIR}.tar.bz2 && \
         cd ${HTSLIB_DIR} && \
         ./configure --prefix=/opt && \
-        make && make install && make clean \
+        make && \
+        mv bgzip htsfile tabix /opt/bin && \
         cd /opt && rm -r ${HTSLIB_DIR}.tar.bz2 ${HTSLIB_DIR}
 
-    apk del ${PKGS}
+    apk del build-base wget zlib-dev 
 
 
 %environment
     export PATH="/opt/bin:$PATH"
 
 %runscript
-    exec "$@"
+    exec samtools "$@"

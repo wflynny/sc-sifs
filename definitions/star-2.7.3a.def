@@ -5,21 +5,30 @@ from: alpine:latest
     Version 1.0.0
     Maintainer Bill Flynn, bill.flynn@jax.org
 
-%post
-    PKGS="gcc g++ make wget zlib1g-dev unzip"
-    STAR_VERSION="2.7.3a"
-    apk --no-cache add ${PKGS}
+%help
+    Runs STAR 2.7.3a directly.
 
+%post
+    STAR_VERSION="2.7.3a"
+    set -euo pipefail
     mkdir -p /opt/bin && \
-        cd /opt && \
-        wget https://github.com/alexdobin/STAR/latest/archive/${STAR_VERSION}.zip && \
+        wget https://github.com/alexdobin/STAR/archive/${STAR_VERSION}.zip && \
         unzip ${STAR_VERSION}.zip && \
-        cd STAR-${STAR_VERSION}/source && \
-        make STARstatic && \
-        cp STAR /opt/bin && \
-        cd /opt && \
-        rm -rf STAR-${STAR_VERSION} && \
-        apk del ${PKGS}
+        cp STAR-${STAR_VERSION}/bin/Linux_x86_64_static/* /opt/bin && \
+        rm -r STAR-${STAR_VERSION}
+
+#    apk --no-cache add build-base wget zlib-dev unzip
+#
+#    mkdir -p /opt/bin && \
+#        cd /opt && \
+#        wget https://github.com/alexdobin/STAR/archive/${STAR_VERSION}.zip && \
+#        unzip ${STAR_VERSION}.zip && \
+#        cd STAR-${STAR_VERSION}/source && \
+#        make STARstatic && \
+#        cp STAR /opt/bin && \
+#        cd /opt && \
+#        rm -rf STAR-${STAR_VERSION} && \
+#        apk del build-base wget
 
 %environment
     export PATH="/opt/bin:$PATH"

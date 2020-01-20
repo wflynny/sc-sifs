@@ -11,26 +11,38 @@ from: alpine:latest
     Maintainer Bill Flynn, bill.flynn@jax.org
 
 %post
+    set -eu
+
     KALLISTO_VERSION="0.46.1"
     BUSTOOLS_VERSION="0.39.4"
-    KALLISTO_TAR=kallisto_linux-v${KALLISTO_VERSION}.tar.gz
-    BUSTOOLS_TAR=bustools_linux-v${BUSTOOLS_VERSION}.tar.gz
-    KLINK="https://github.com/pachterlab/kallisto/releases/download/v${KALLISTO_VERSION}/${KALLISTO_TAR}"
-    BLINK="https://github.com/pachterlab/bustools/releases/download/v${BUSTOOLS_VERSION}/${BUSTOOLS_TAR}"
+    KALLISTO_ZIP=v${KALLISTO_VERSION}.zip
+    BUSTOOLS_ZIP=v${BUSTOOLS_VERSION}.zip
+    KLINK="https://github.com/pachterlab/kallisto/archive/${KALLISTO_ZIP}"
+    BLINK="https://github.com/BUStools/bustools/archive/${BUSTOOLS_ZIP}"
 
-    apk update && apk --no-cache add wget gzip
+    apk update && \
+        apk --no-cache \
+            --allow-untrusted \
+            --repository \
+            http://dl-3.alpinelinux.org/alpine/edge/testing \
+            add wget unzip cmake build-base hdf5-dev zlib-dev autoconf 
 
     mkdir -p /opt/bin && \
         cd /opt 
     wget ${KLINK} && \
-        tar -zxvf ${KALLISTO_TAR} && \
-        cp kallisto/kallisto /opt/bin && \
-        rm -r ${KALLISTO_TAR} kallisto
+        unzip ${KALLISTO_ZIP} && \
+        cd kallisto-${KALLISTO_VERSION} && mkdir build && cd build && \
+        cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt .. && \
+        make && make install && \
+        cd /opt/ && rm -r kallisto*
+
     wget ${BLINK} && \
-        tar -zxvf ${BUSTOOLS_TAR} && \
-        cp bustools/bustools /opt/bin && \
-        rm -r ${BUSTOOLS_TAR} bustools
-    apk del ${PKGS}
+        unzip ${BUSTOOLS_ZIP} && \
+        cd bustools-${BUSTOOLS_VERSION} && mkdir build && cd build && \
+        cmake -DCMAKE_INSTALL_PREFIX:PATH=/opt .. && \
+        make && make install && \
+        cd /opt/ && rm -r bustools*
+    apk del wget build-base unzip autoconf cmake
 
 %environment
     export PATH="/opt/bin:$PATH"
