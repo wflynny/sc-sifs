@@ -43,4 +43,4 @@ from: debian:buster-slim
     rm -r cellranger-2.2.0/cellranger-tiny-*
 
 %runscript
-    exec "$@"
+    exec cellranger "$@"

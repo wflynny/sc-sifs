@@ -45,4 +45,4 @@ from: debian:buster-slim
     rm -r cellranger-atac-1.2.0/cellranger-atac-tiny-*
 
 %runscript
-    exec "$@"
+    exec cellranger-atac "$@"

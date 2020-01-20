@@ -45,4 +45,4 @@ from: debian:buster-slim
     rm -r spaceranger-1.0.0/external/spaceranger_tiny_*
 
 %runscript
-    exec "$@"
+    exec spaceranger "$@"
