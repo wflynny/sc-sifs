@@ -1,0 +1,13 @@
+bootstrap: docker
+from: soedinglab/hh-suite
+
+%help
+    Runs hhblits and associated tools
+
+%labels
+    Version 1.0.0
+    SoftwareVersion 3.1.0
+    Author soedinglab/hh-suite
+
+%runscript
+    exec hhblits "$@"

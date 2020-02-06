@@ -1,0 +1,38 @@
+bootstrap: docker
+from: debian:buster-slim
+
+%labels
+    Version 1.0.0
+    SoftwareVersion 3.3
+    Author S. Eddy et al.
+    SIFMaintainer Bill Flynn, bill.flynn@jax.org
+
+%help
+    Runs HMMER v3.3 with additional easel tools
+
+    Because HMMER is actually a suite of 18 tools, use exec here:
+
+    singularity exec <img.sif> cmd --options args
+
+%post
+    apt-get update && \
+        apt-get install -y build-essential autoconf wget
+
+    mkdir -p /opt/bin && \
+        cd /opt
+
+    wget -nv http://eddylab.org/software/hmmer/hmmer.tar.gz && \
+        tar -zxf hmmer.tar.gz && \
+        cd hmmer-3.3 && \
+        ./configure  && \
+        make && make install && \
+        cd easel && make install 
+
+    cd /opt && \
+        rm -r hmmer*
+
+    apt-get clean && apt-get autoremove -y
+
+
+%runscript
+    exec ls /usr/local/bin/ | egrep 'hmm|easel'

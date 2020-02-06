@@ -1,0 +1,28 @@
+bootstrap: library
+from: alpine:latest
+
+%help
+    Runs Clustal Omega
+
+    singularity run <img.sif> -h
+
+%labels
+    Version 1.0.0
+    SoftwareVersion 1.2.4
+    Author F. Sievers et al.
+    Maintainer Bill Flynn, bill.flynn@jax.org
+
+%post
+    set -euo pipefail
+
+    apk update && apk --no-cache add wget
+
+    mkdir -p /opt/bin && \
+        cd /opt/bin && \
+        wget -nv -O clustalo "http://www.clustal.org/omega/clustalo-1.2.4-Ubuntu-x86_64" && \
+        chmod +x clustalo
+
+    apk del wget
+
+%runscript
+    exec /opt/bin/clustalo "$@"

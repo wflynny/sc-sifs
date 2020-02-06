@@ -1,0 +1,48 @@
+bootstrap: docker
+from: debian:buster-slim
+
+%labels
+    Version 1.0.0
+    SoftwareVersion 3.2.7
+    Author A. Kahari et al.
+    SIFMaintainer Bill Flynn, bill.flynn@jax.org
+
+%help
+    Runs MrBayes 3.2.7
+
+    singularity run <img.sif> --options args
+
+%post
+    apt-get update && \
+        apt-get install -y build-essential autoconf g++ libtool libreadline-dev wget git pkgconf
+
+    mkdir -p /opt/bin && \
+        cd /opt
+
+    git clone --depth=1 https://github.com/beagle-dev/beagle-lib.git && \
+        cd beagle-lib && \
+        ./autogen.sh && \
+        ./configure --without-jdk --prefix="/opt" && \
+        make -j2 && \
+        make install
+
+    export LD_LIBRARY_PATH="/opt/lib:$LD_LIBRARY_PATH"
+    export PKG_CONFIG_PATH="/opt/lib/pkgconf:$PKG_CONFIG_PATH"
+
+    cd /opt && \
+        wget -nv https://github.com/NBISweden/MrBayes/releases/download/v3.2.7/mrbayes-3.2.7.tar.gz && \
+        tar -zxf mrbayes-3.2.7.tar.gz && \
+        cd mrbayes-3.2.7 && \
+        ./configure --prefix=/opt && \
+        make -j2 && make install
+
+    cd /opt && \
+        rm -r beagle-lib && \
+        rm -r mrbayes-3.2.7
+
+%environment
+    export LD_LIBRARY_PATH="/opt/beagle/lib:$LD_LIBRARY_PATH"
+    export PKG_CONFIG_PATH="/opt/beagle/lib/pkgconf:$PKG_CONFIG_PATH"
+
+%runscript
+    exec /opt/bin/mb "$@"

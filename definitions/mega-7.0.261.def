@@ -1,0 +1,27 @@
+bootstrap: docker
+from: debian:buster-slim
+
+%labels
+    Version 1.0.0
+    SoftwareVersion 7.0.26-1
+    Author S. Kumar et al.
+    SIFMaintainer Bill Flynn, bill.flynn@jax.org
+
+%help
+    Runs MEGA-CC 7.0.26-1
+
+    singularity run <img.sif> --options args
+
+%post
+    apt update && apt install -y build-essential wget tar libc6 libglib2.0-0 libgtk2.0-dev
+
+    mkdir -p /opt/mega && \
+        cd /opt/mega && \
+        wget -nv http://s3-far.jax.org/singlecell-software/megacc-7.0.26-1.x86_64.tar.gz && \
+        tar -zxf megacc-7.0.26-1.x86_64.tar.gz && \
+        rm megacc-7.0.26-1.x86_64.tar.gz && \
+        rm -r *.txt *.pdf Examples/
+
+
+%runscript
+    exec /opt/mega/megacc "$@"

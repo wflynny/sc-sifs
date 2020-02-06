@@ -1,0 +1,28 @@
+bootstrap: library
+from: alpine:latest
+
+%labels
+    Version 1.0.0
+    SoftwareVersion 2.5.1
+    Author S. K. Pond et al.
+    SIFMaintainer Bill Flynn, bill.flynn@jax.org
+
+%help
+    Runs HyPhy 2.5.1
+
+    singularity run <img.sif> --options args
+
+%post
+    apk update && apk --no-cache add cmake build-base wget unzip libcurl
+
+    mkdir -p /opt/hyphy && \
+        cd /opt && \
+        wget -nv https://github.com/veg/hyphy/archive/2.5.1.zip && \
+        unzip 2.5.1.zip && \
+        cd hyphy-2.5.1 && \
+        cmake -DCMAKE_INSTALL_PREFIX=/opt/hyphy . && \
+        make MP && \
+        make install
+
+%runscript
+    exec /opt/hyphy/bin/hyphy "$@"

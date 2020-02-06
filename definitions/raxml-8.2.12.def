@@ -1,0 +1,29 @@
+bootstrap: library
+from: alpine:latest
+
+%labels
+    Version 1.0.0
+    SoftwareVersion 8.2.12
+    Author A. Stamatakis et al.
+    SIFMaintainer Bill Flynn, bill.flynn@jax.org
+
+%help
+    Runs RAxML 8.2.12 (AVX2 PTHREADS)
+
+    singularity run <img.sif> --options args
+
+%post
+    apk update && apk --no-cache add build-base wget tar libcurl
+
+    mkdir -p /opt/bin && \
+        cd /opt && \
+        wget -nv https://github.com/stamatak/standard-RAxML/archive/v8.2.12.zip && \
+        unzip v8.2.12.zip && \
+        cd standard-RAxML-8.2.12 && \
+        make -f Makefile.AVX2.PTHREADS.gcc && \
+        mv raxmlHPC-PTHREADS-AVX2 /opt/bin/raxml && \
+        cd /opt && rm -r standard*
+
+
+%runscript
+    exec /opt/bin/raxml "$@"

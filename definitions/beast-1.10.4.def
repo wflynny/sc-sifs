@@ -1,0 +1,35 @@
+bootstrap: docker
+from: debian:stretch
+
+%labels
+    Version 1.0.0
+    SoftwareVersion 1.10.4
+    Author BEAST Developers
+    SIFMaintainer Bill Flynn, bill.flynn@jax.org
+
+%help
+    Runs BEAST 1.10.4 (java -jar beast.jar)
+
+    singularity run <img.sif> --options args
+
+%post
+    apt-get update && \
+        apt-get install -y openjdk-8-jre openjdk-8-jdk wget build-essential autoconf automake libtool git pkg-config
+
+    mkdir -p /opt/ && cd /opt
+    wget -nv https://github.com/beast-dev/beast-mcmc/releases/download/v1.10.4/BEASTv1.10.4.tgz
+    tar -zxf BEASTv1.10.4.tgz && \
+        mv BEASTv1.10.4 beast
+
+    git clone --depth=1 https://github.com/beagle-dev/beagle-lib.git
+    cd beagle-lib
+    ./autogen.sh
+    ./configure --prefix="/opt/beagle"
+    make install
+
+%environment
+    export LD_LIBRARY_PATH="/opt/beagle/lib:$LD_LIBRARY_PATH"
+    export PKG_CONFIG_PATH="/opt/beagle/lib/pkgconf:$PKG_CONFIG_PATH"
+
+%runscript
+    exec /opt/beast/bin/beast "$@"
