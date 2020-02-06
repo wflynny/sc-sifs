@@ -3,6 +3,9 @@ From: r-base:3.6.2
 
 %help
     Run JupyterLab with Python and R
+    
+    Best way to run is 
+    singularity run -B /projects:/projects -B /fastscratch:/fastscratch <img.sif>
 
     Key Python packages:
         - scanpy
@@ -110,5 +113,5 @@ From: r-base:3.6.2
 %runscript
     echo "Starting notebook..."
     PORT=$(shuf -i8899-11999 -n1)
-    exec /opt/conda/bin/jupyter lab --notebook-dir=/opt/notebooks --ip='*' --port=$PORT --no-browser --allow-root
-    echo "Open browser to $(hostname -s):${PORT}"
+    echo "Open browser to $(hostname -A):${PORT}"
+    exec /opt/conda/bin/jupyter lab --notebook-dir=/projects --ip='*' --port=$PORT --no-browser --allow-root
