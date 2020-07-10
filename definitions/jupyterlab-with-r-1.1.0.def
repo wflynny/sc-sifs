@@ -1,0 +1,119 @@
+BootStrap: docker
+From: r-base:3.6.2
+
+%help
+    Run JupyterLab with Python and R
+    
+    Best way to run is 
+    singularity run -B /projects:/projects -B /fastscratch:/fastscratch <img.sif>
+
+    Key Python packages:
+        - scanpy
+        - scientific python stack
+    Key R packages:
+        - Seurat
+        - inferCNV (with jags)
+        - harmony and lisi
+
+    singularity run <img.sif> launches a jupyter lab server. 
+    Use %load_ext rpy2.ipython to get %%R cell magic.
+
+%labels
+    Version 1.1.0
+    Author Bill Flynn, billflynn@jax.org
+    SIFMaintainer Bill Flynn, bill.flynn@jax.org
+
+%environment
+    export "PATH=/opt/conda/bin:$PATH"
+    export "LD_LIBRARY_PATH=/usr/local/lib"
+
+%post
+    apt-get update --fix-missing
+    apt-get install -y \
+        wget \
+        bzip2 \
+        locales \
+        build-essential \
+        ca-certificates \
+        tar \
+        gfortran \
+        libopenblas-base \
+        libopenblas-dev \
+        libcurl4-openssl-dev \
+        libxml2-dev \
+        libssl-dev \
+        libssh-dev \
+        libgit2-dev \
+        xorg \
+        libfreetype6-dev \
+        git
+
+
+    mkdir -p /opt && cd /opt
+    wget -nv -O JAGS-4.3.0.tar.gz https://sourceforge.net/projects/mcmc-jags/files/JAGS/4.x/Source/JAGS-4.3.0.tar.gz/download
+    tar -zxf JAGS-4.3.0.tar.gz && \
+        cd JAGS-4.3.0 && \
+        ./configure && \
+        make && \
+        make install 
+    # add jags to path so rjags installation works
+    export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
+
+    # we want a python installation before biocmanager installs
+    wget --quiet -O ~/miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+    /bin/bash ~/miniconda.sh -q -b -p /opt/conda && rm ~/miniconda.sh
+    /opt/conda/bin/conda clean -tipsy && \
+        ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
+        echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
+        echo "conda activate base" >> ~/.bashrc
+    /opt/conda/bin/conda update -q -n base -c defaults conda
+    # note that the we !append! python to the path so that conda fortran/gcc
+    # libraries do not mess up R installs since the R installation is outside of
+    # conda.  I tried having it inside of conda and got weird gcc linking errors
+    export PATH="$PATH:/opt/conda/bin"
+
+
+    # install r packages here
+    Rscript --slave -e "install.packages('devtools'); devtools::install_github('immunogenomics/harmony'); devtools::install_github('immunogenomics/lisi')"
+    Rscript --slave -e "install.packages('rjags', quiet=T, dependencies=T)"
+    Rscript --slave -e "if (!requireNamespace('BiocManager', quietly = TRUE)) { install.packages('BiocManager', quiet=T, dependencies=T) }; BiocManager::install(c('infercnv', 'multtest'))"
+
+
+    # install jupyterlab
+    /opt/conda/bin/conda install --quiet -y \
+        -c bioconda -c conda-forge \
+        jupyterlab \
+        numpy pandas scikit-learn scikit-image \
+        matplotlib seaborn \
+        leidenalg scanpy scrublet \
+        psutil lxml bioservices \
+        tzlocal \
+        cmocean hmmlearn
+    mkdir /opt/notebooks
+
+    # install miniCRAN so that we can explicitly lists all of Seurats damn dependencies
+    Rscript --slave -e "install.packages(c('IRkernel', 'miniCRAN'), dependencies=T); IRkernel::installspec(user = FALSE)"
+    Rscript --slave -e "library(miniCRAN); install.packages(pkgDep('Seurat'), dependencies=T)"
+
+    # finally install rpy2 
+    /opt/conda/bin/python -m pip install --quiet rpy2
+
+    # locale fix
+    echo "LC_ALL=en_US.UTF-8" >> /etc/environment
+    echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen
+    echo "LANG=en_US.UTF-8" > /etc/locale.conf
+    locale-gen en_US.UTF-8
+
+    # clean up
+    apt-get clean && \
+        rm -rf /var/lib/apt/lists/*
+
+    mkdir /projects
+    mkdir /fastscratch
+
+
+%runscript
+    echo "Starting notebook..."
+    PORT=$(shuf -i8899-11999 -n1)
+    echo "Open browser to $(hostname -A):${PORT}"
+    exec /opt/conda/bin/jupyter lab --notebook-dir=/projects --ip='*' --port=$PORT --no-browser --allow-root
